@@ -23,7 +23,7 @@ This ROS2 package provides a node that reads a PCD (Point Cloud Data) file and p
 
    ```bash
    cd ~/ros2_ws
-   colcon build --packages-select pcd_publisher
+   colcon build --symlink-install --packages-select pcd_publisher
    ```
 
 3. Source the setup file:
@@ -37,7 +37,7 @@ This ROS2 package provides a node that reads a PCD (Point Cloud Data) file and p
 Run the node:
 
 ```bash
-ros2 run pcd_publisher pcd_publisher /path/to/pcd
+ros2 run pcd_publisher pcd_publisher --ros-args -p pcd_file_path:=/path/to/pcd
 ```
 
 The node will publish the point cloud data on the `/pointcloud` topic.
