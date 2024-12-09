@@ -38,13 +38,25 @@ This ROS 2 package (`pcd_publisher`) provides a node that reads a PCD (Point Clo
 
 ## Usage
 
-Run the node:
+### `ROS 2` `PointCloud2` publisher (reads a `PCD` file)
+
+Run the publisher node:
 
 ```bash
 ros2 run pcd_publisher pcd_publisher --ros-args -p pcd_file_path:=/path/to/pcd
 ```
 
 The node will publish the point cloud data on the `/pointcloud` topic.
+
+### `ROS 2` `PointCloud2` subscriber (writes a `PCD` file)
+
+Run the subscriber:
+
+```bash
+ros2 run pcd_publisher pcd_subscriber --ros-args -p pcd_file_path:=/path/to/pcd -p topic:=/pointcloud
+```
+
+The subscriber will listen to the `/pointcloud` topic and save the received point cloud data to a PCD file.
 
 
 ## License
