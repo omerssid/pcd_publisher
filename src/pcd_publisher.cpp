@@ -101,7 +101,7 @@ public:
         RCLCPP_INFO_STREAM(this->get_logger(), "Rotation (deg): " << x_rotation_ * 180.0 / M_PI << ", " << y_rotation_ * 180.0 / M_PI << ", " << z_rotation_ * 180.0 / M_PI);
 
         // Load PCD file
-        if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_file_path_, *cloud_) == -1)
+        if (pcl::io::loadPCDFile<pcl::PointXYZI>(pcd_file_path_, *cloud_) == -1)
         {
             RCLCPP_ERROR(this->get_logger(), "Failed to load PCD file: %s", pcd_file_path_.c_str());
             rclcpp::shutdown();
@@ -133,8 +133,8 @@ private:
     string pcd_file_path_, frame_id_, topic_name_;
     double x_translation_{0.0}, y_translation_{0.0}, z_translation_{0.0};
     double x_rotation_{0.0}, y_rotation_{0.0}, z_rotation_{0.0};
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_{new pcl::PointCloud<pcl::PointXYZ>};
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_transformed_{new pcl::PointCloud<pcl::PointXYZ>};
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_{new pcl::PointCloud<pcl::PointXYZI>};
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_transformed_{new pcl::PointCloud<pcl::PointXYZI>};
 };
 
 int main(int argc, char* argv[])
