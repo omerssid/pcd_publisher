@@ -4,6 +4,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <Eigen/Geometry>
+#include <pcl/common/transforms.h>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <string>
@@ -91,7 +93,12 @@ public:
             std::chrono::seconds(1),
             std::bind(&PCDPublisher::publish_pointcloud, this));
 
-        RCLCPP_INFO_STREAM(this->get_logger(), "PCD file path: " << pcd_file_path_);
+        RCLCPP_INFO_STREAM(this->get_logger(), "PCD file path:  " << pcd_file_path_);
+        RCLCPP_INFO_STREAM(this->get_logger(), "Frame ID:       " << frame_id_);
+        RCLCPP_INFO_STREAM(this->get_logger(), "Topic name:     " << topic_name_);
+        RCLCPP_INFO_STREAM(this->get_logger(), "Translation:    " << x_translation_ << ", " << y_translation_ << ", " << z_translation_);
+        RCLCPP_INFO_STREAM(this->get_logger(), "Rotation (rad): " << x_rotation_ << ", " << y_rotation_ << ", " << z_rotation_);
+        RCLCPP_INFO_STREAM(this->get_logger(), "Rotation (deg): " << x_rotation_ * 180.0 / M_PI << ", " << y_rotation_ * 180.0 / M_PI << ", " << z_rotation_ * 180.0 / M_PI);
 
         // Load PCD file
         if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_file_path_, *cloud_) == -1)
@@ -104,12 +111,18 @@ public:
 private:
     void publish_pointcloud()
     {
+        // Apply translation and rotation to the point cloud
+        Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+        transform.translation() << x_translation_, y_translation_, z_translation_;
+        transform.rotate(Eigen::AngleAxisf(x_rotation_, Eigen::Vector3f::UnitX()));
+        transform.rotate(Eigen::AngleAxisf(y_rotation_, Eigen::Vector3f::UnitY()));
+        transform.rotate(Eigen::AngleAxisf(z_rotation_, Eigen::Vector3f::UnitZ()));
+        pcl::transformPointCloud(*cloud_, *cloud_transformed_, transform);
+        // Create ROS 2 PointCloud2 message
         sensor_msgs::msg::PointCloud2 output;
-        pcl::toROSMsg(*cloud_, output);
+        pcl::toROSMsg(*cloud_transformed_, output);
         output.header.frame_id = frame_id_;
         output.header.stamp = this->now();
-        // TODO: Apply translation and rotation to the point cloud
-
         publisher_->publish(output);
         RCLCPP_INFO_ONCE(this->get_logger(), "Published PointCloud2 message");
     }
@@ -121,6 +134,7 @@ private:
     double x_translation_{0.0}, y_translation_{0.0}, z_translation_{0.0};
     double x_rotation_{0.0}, y_rotation_{0.0}, z_rotation_{0.0};
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_{new pcl::PointCloud<pcl::PointXYZ>};
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_transformed_{new pcl::PointCloud<pcl::PointXYZ>};
 };
 
 int main(int argc, char* argv[])
